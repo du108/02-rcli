@@ -1,5 +1,6 @@
 use anyhow::Result;
 use rand::prelude::*;
+use zxcvbn::zxcvbn;
 
 const UPPERCASE: &[u8] = b"ABCDEFGHIJKLMNOPQRSTUVWXYZ"; // 是否包含大写字母。
 const LOWERCASE: &[u8] = b"abcdefghijklmnopqrstuvwxyz"; // 是否包含小写字母。
@@ -39,6 +40,11 @@ pub fn process_genpass(
         password.push(*c); // 添加字符到密码中。
     }
     password.shuffle(&mut rng); // 随机化密码。
-    println!("{}", String::from_utf8(password)?); // 打印密码。
+    let password = String::from_utf8(password)?;
+    println!("{}", password); // 打印密码。
+
+    //output password strength in strerr
+    let estimate = zxcvbn(&password, &[])?; // 评估密码强度。
+    eprintln!("the strength is {}", estimate.score()); // 打印密码强度。;
     Ok(())
 }

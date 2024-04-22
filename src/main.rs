@@ -1,14 +1,28 @@
 use anyhow::Result;
-use rcli::{process_csv, Args, SubCommand};
-
 use clap::Parser;
+use rcli::{process_csv, process_genpass, Args, SubCommand};
 
 fn main() -> Result<()> {
     let args = Args::parse();
     // println!("{:?}", args);
     match args.cmd {
-        Some(SubCommand::CSV(csvopts)) => process_csv(&csvopts.input, &csvopts.output)?,
-        None => println!("nothing"),
+        SubCommand::CSV(csvopts) => {
+            let output = if let Some(output) = csvopts.output {
+                output
+            } else {
+                format!("format.{}", csvopts.format)
+            };
+            process_csv(&csvopts.input, output, Into::<&str>::into(csvopts.format))?;
+        }
+        SubCommand::GenPass(genopts) => {
+            process_genpass(
+                genopts.length,
+                genopts.uppercase,
+                genopts.lowercase,
+                genopts.numbers,
+                genopts.symbols,
+            )?;
+        }
     }
 
     Ok(())

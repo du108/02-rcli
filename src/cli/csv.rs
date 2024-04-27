@@ -1,34 +1,8 @@
-use clap::{Parser, Subcommand};
-use std::{fmt, path::Path, str::FromStr};
+use clap::Parser;
+use std::{fmt, str::FromStr};
 
-#[derive(Parser, Debug)]
-#[command(version, about, long_about=None)]
-pub struct Args {
-    #[command(subcommand)]
-    pub cmd: SubCommand,
-}
+use super::verify_file_input;
 
-#[derive(Subcommand, Debug)]
-pub enum SubCommand {
-    #[command(name = "csv", about = "show CSV or convert csv to other format")]
-    CSV(CsvOpts),
-    #[command(name = "genpass", about = "Generate a password")]
-    GenPass(GenPassOpts),
-}
-
-#[derive(Parser, Debug)]
-pub struct GenPassOpts {
-    #[arg(long, default_value_t = 16)]
-    pub length: u8,
-    #[arg(long, default_value_t = true)]
-    pub uppercase: bool,
-    #[arg(long, default_value_t = true)]
-    pub lowercase: bool,
-    #[arg(long, default_value_t = true)]
-    pub numbers: bool,
-    #[arg(long, default_value_t = true)]
-    pub symbols: bool,
-}
 #[derive(Parser, Debug)]
 pub struct CsvOpts {
     #[arg(long, value_parser = verify_file_input)]
@@ -45,15 +19,15 @@ pub struct CsvOpts {
 
 #[derive(Debug, Clone, Copy)]
 pub enum OutputFormat {
-    JSON,
-    YAML,
+    Json,
+    Yaml,
 }
 
 impl From<OutputFormat> for &str {
     fn from(value: OutputFormat) -> Self {
         match value {
-            OutputFormat::JSON => "json",
-            OutputFormat::YAML => "yaml",
+            OutputFormat::Json => "json",
+            OutputFormat::Yaml => "yaml",
         }
     }
 }
@@ -63,8 +37,8 @@ impl FromStr for OutputFormat {
 
     fn from_str(value: &str) -> Result<Self, Self::Err> {
         match value.to_lowercase().as_str() {
-            "json" => Ok(OutputFormat::JSON),
-            "yaml" => Ok(OutputFormat::YAML),
+            "json" => Ok(OutputFormat::Json),
+            "yaml" => Ok(OutputFormat::Yaml),
             &_ => Err(anyhow::anyhow!("Invalid format")),
         }
     }
@@ -83,11 +57,4 @@ fn parse_format(format: &str) -> Result<OutputFormat, anyhow::Error> {
     //     &_  => Err(anyhow::anyhow!("Invalid format")),
     // }
     format.parse()
-}
-fn verify_file_input(filename: &str) -> Result<String, String> {
-    if Path::new(filename).exists() {
-        Ok(filename.into())
-    } else {
-        Err("File does not exist".into())
-    }
 }
